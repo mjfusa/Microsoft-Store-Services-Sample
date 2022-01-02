@@ -29,7 +29,7 @@ namespace MicrosoftStoreServicesSample.Controllers
         private readonly IConfiguration _config;
         public CollectionsController(IConfiguration config,
                                      IStoreServicesClientFactory storeServicesClientFactory,
-                                     ILogger<CollectionsController> logger) : 
+                                     ILogger<CollectionsController> logger) :
             base(storeServicesClientFactory, logger)
         {
             _config = config;
@@ -124,7 +124,7 @@ namespace MicrosoftStoreServicesSample.Controllers
                     includeJson = true;
                 }
             }
-            
+
             //  Build our query request parameters to the Collections Service
             var queryRequest = new CollectionsQueryRequest();
 
@@ -269,7 +269,7 @@ namespace MicrosoftStoreServicesSample.Controllers
                     response.Append(JsonConvert.SerializeObject(userCollection));
                 }
 #endif
-            result = JsonConvert.SerializeObject(userCollection);
+                result = JsonConvert.SerializeObject(userCollection);
             }
             catch (Exception ex)
             {
@@ -306,7 +306,7 @@ namespace MicrosoftStoreServicesSample.Controllers
                 {
                     throw new ArgumentException("No UserId in request header", nameof(clientRequest));
                 }
-                
+
 
                 pendingRequest = ConsumableManager.CreateAndVerifyPendingConsumeRequest(clientRequest);
             }
