@@ -7,7 +7,7 @@ env:
   AZURE_WEBAPP_NAME: MicrosoftStoreServicesSample
   AZURE_WEBAPP_PACKAGE_PATH: MicrosoftStoreServicesSample/publish
   AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.MicrosoftStoreServicesSample_f83a }}
-  CONFIGURATION: Release
+  CONFIGURATION: Debug
   DOTNET_CORE_VERSION: 5.0.x
   #WORKING_DIRECTORY: MicrosoftStoreServicesSample
 jobs:
@@ -17,13 +17,13 @@ jobs:
     - uses: actions/checkout@v2
       with:
         repository: mjfusa/Microsoft-Store-Services-Sample
-        path: Microsoft-Store-Services-Sample/
+        #path: Microsoft-Store-Services-Sample/
     
     - name: Checkout Microsoft-Store-Services
       uses: actions/checkout@v2
       with:
         repository: mjfusa/Microsoft-Store-Services
-        path: Microsoft-Store-Services/
+        #path: Microsoft-Store-Services/
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
@@ -43,7 +43,6 @@ jobs:
     - name: Publish
       working-directory: Microsoft-Store-Services-Sample
       run: dotnet publish --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
-      #run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
     - name: Deploy to Azure WebApp
       uses: azure/webapps-deploy@v2
       with:
