@@ -164,6 +164,7 @@ namespace MicrosoftStoreServicesSample.Controllers
             //  Send the request to the Collections service using a StoreServicesClient
             //  This is wrapped in a try/catch to log any exceptions and to format
             //  the response to the client to remove call stack info.
+            string result = "";
             try
             {
                 var userCollection = new CollectionsQueryResponse();
@@ -171,7 +172,7 @@ namespace MicrosoftStoreServicesSample.Controllers
                 {
                     userCollection = await storeClient.CollectionsQueryAsync(queryRequest);
                 }
-
+#if FORMAT_OUTPUT
                 //  TODO: Operate on the results with your custom logic
                 //        For this sample we just iterate through the results, format them to
                 //        a readable string and send it back to the client as proof of flow.
@@ -267,7 +268,8 @@ namespace MicrosoftStoreServicesSample.Controllers
                     response.Append("RawResponse: ");
                     response.Append(JsonConvert.SerializeObject(userCollection));
                 }
-
+#endif
+            result = JsonConvert.SerializeObject(userCollection);
             }
             catch (Exception ex)
             {
@@ -277,7 +279,7 @@ namespace MicrosoftStoreServicesSample.Controllers
             }
 
             FinalizeLoggingCv();
-            return new OkObjectResult(response.ToString());
+            return new OkObjectResult(result);
         }
 
         /// <summary>
