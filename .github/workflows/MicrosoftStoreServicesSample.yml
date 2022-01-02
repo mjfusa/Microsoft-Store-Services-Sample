@@ -16,14 +16,11 @@ jobs:
     steps:
     - name: Checkout Microsoft-Store-Services-Sample
       uses: actions/checkout@v2
-      with:
-        path: main
-
-    - name: Check out Microsoft-Store-Services
+    
+    - name: Checkout Microsoft-Store-Services
       uses: actions/checkout@v2
       with:
         repository: mjfusa/Microsoft-Store-Services
-        path: main
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
