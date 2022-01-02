@@ -9,6 +9,7 @@ env:
   AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.MicrosoftStoreServicesSample_f83a }}
   CONFIGURATION: Debug
   DOTNET_CORE_VERSION: 5.0.x
+  PROJECT_PATH: Microsoft-Store-Services-Sample
   #WORKING_DIRECTORY: MicrosoftStoreServicesSample
 jobs:
   build-and-deploy:
@@ -47,7 +48,7 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        package: ${{ env.PROJECT_PATH }}/${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
         publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
     - name: Publish Artifacts
       uses: actions/upload-artifact@v1.0.0
