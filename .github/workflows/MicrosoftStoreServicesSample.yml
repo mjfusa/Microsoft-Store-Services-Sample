@@ -9,18 +9,21 @@ env:
   AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.MicrosoftStoreServicesSample_f83a }}
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 5.0.x
-  WORKING_DIRECTORY: MicrosoftStoreServicesSample
+  #WORKING_DIRECTORY: MicrosoftStoreServicesSample
 jobs:
   build-and-deploy:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-
-    - name: Checkout tools repo
+      with:
+        repository: mjfusa/Microsoft-Store-Services-Sample
+        path: Microsoft-Store-Services-Sample/
+    
+    - name: Checkout Microsoft-Store-Services
       uses: actions/checkout@v2
       with:
         repository: mjfusa/Microsoft-Store-Services
-        path: /Microsoft-Store-Services
+        path: Microsoft-Store-Services/
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
