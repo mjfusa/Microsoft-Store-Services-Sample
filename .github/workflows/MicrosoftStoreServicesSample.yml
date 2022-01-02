@@ -30,7 +30,7 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
     - name: Restore
-      working-directory: MicrosoftStoreServicesSample
+      working-directory: Microsoft-Store-Services-Sample
       run: dotnet restore #"${{ env.WORKING_DIRECTORY }}"
     - name: Build
       run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore
