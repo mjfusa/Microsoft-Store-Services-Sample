@@ -302,11 +302,13 @@ namespace MicrosoftStoreServicesSample.Controllers
                 //  TODO: Replace this code obtaining and noting the UserId with your own
                 //        authentication ID system for each user or have the client just
                 //        put the ID you will understand into the API as the UserPartnerID
-                if (string.IsNullOrEmpty(GetUserId()))
+                var userId = GetUserId();
+                if (string.IsNullOrEmpty(userId))
                 {
                     throw new ArgumentException("No UserId in request header", nameof(clientRequest));
                 }
-
+                
+                clientRequest.UserId = userId;
 
                 pendingRequest = ConsumableManager.CreateAndVerifyPendingConsumeRequest(clientRequest);
             }
@@ -320,9 +322,9 @@ namespace MicrosoftStoreServicesSample.Controllers
 
             //  call our helper function to manage the call controller
             response.Append(await consumeManager.ConsumeAsync(pendingRequest, _cV));
-
+            var consumeResult = await consumeManager.ConsumeAsync(pendingRequest, _cV, false);
             FinalizeLoggingCv();
-            return new OkObjectResult(response.ToString());
+            return new OkObjectResult(consumeResult);
         }
 
         /// <summary>

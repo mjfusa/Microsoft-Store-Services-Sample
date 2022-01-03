@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MicrosoftStoreServicesSample
@@ -150,6 +151,110 @@ namespace MicrosoftStoreServicesSample
 
             return response;
         }
+
+        public async Task<CollectionsConsumeResponse> ConsumeAsync(PendingConsumeRequest request, CorrelationVector cV, bool ccr=false)
+        {
+            string response = "";
+
+            //  This will cache the request into the pending consume list if
+            //  it is not already being tracked.
+            await TrackPendingConsumeAsync(request, cV);
+
+            CollectionsConsumeResponse consumeResult;
+            var consumeRequest = await CreateConsumeRequestFromPendingRequestAsync(request);
+
+            //  Send the request to the Collections service using the 
+            //  StoreServicesClient from our factory.
+            //  This is wrapped in a try/catch to log any exceptions and to format
+            //  the response to the client to remove call stack info.
+            try
+            {
+                using (var storeClient = _storeServicesClientFactory.CreateClient())
+                {
+                    consumeResult = await storeClient.CollectionsConsumeAsync(consumeRequest);
+                }
+            }
+            catch (StoreServicesClientConsumeException consumeEx)
+            {
+                //  This is a specific consume request error which usually means the user does not have enough
+                //  balance do consume the amount we specified.  The exception should have a ConsumeError that
+                //  we can check.  This means the request did go through and should be removed from the queue.
+                response = $"Error attempting to consume {request.RemoveQuantity}" +
+                           $" from product {request.ProductId} for UserId {request.UserId}: " +
+                           $"{consumeEx.ConsumeErrorInformation.Code}, {consumeEx.ConsumeErrorInformation.Message}";
+
+                _logger.ServiceWarning(cV.Value, response, consumeEx);
+
+                await RemovePendingConsumeAsync(request, cV);
+                return new CollectionsConsumeResponse();
+            }
+            catch (Exception ex)
+            {
+                if (ex is HttpRequestException)
+                {
+                    //  This exception mean that we didn't get back a response and so we
+                    //  are unsure if the consume happened or not on the Collections side.
+                    //  So, we keep this consume pending to retry and verify it later
+                    _logger.ConsumeError(cV.Value,
+                                         request.UserId,
+                                         request.TrackingId,
+                                         request.ProductId,
+                                         request.RemoveQuantity,
+                                         "Error getting consume response, keeping request in the pending queue",
+                                         ex);
+
+                    //  Return here so that we don't remove this consume from the pending
+                    //  cache.
+                    return new CollectionsConsumeResponse();
+                }
+                else if (ex is TaskCanceledException)
+                {
+                    //  The call was canceled from our side, but we may have already sent out the request,
+                    //  so we need to hold onto this in the pending consumes to ensure we give the user
+                    //  credit if it did go through.
+                    _logger.ConsumeError(cV.Value,
+                                         request.UserId,
+                                         request.TrackingId,
+                                         request.ProductId,
+                                         request.RemoveQuantity,
+                                         "Consume was canceled, keeping request in the pending queue",
+                                         ex);
+
+                    //  Return here so that we don't remove this consume from the pending
+                    //  cache.
+                    return new CollectionsConsumeResponse();
+                }
+                else
+                {
+                    //  this is not an expected exception so it should be thrown back up
+                    throw;
+                }
+            }
+
+            response = $"  Consumed {request.RemoveQuantity} from product {consumeResult.ProductId}, " +
+                       $"new balance is {consumeResult.NewQuantity} for UserId {request.UserId}.  Transaction: {consumeResult.TrackingId}\n";
+
+            //  TODO: Your own server logic here on granting the item to the user's
+            //        account within your own game service / database
+            await GrantUserConsumableValue(request, cV);
+
+            //  If we have the UserPurchaseId then we can add this to the Clawback queue
+            //  for checking if the user requests a refund for this item later
+            if (!string.IsNullOrEmpty(request.UserPurchaseId))
+            {
+                var clawManager = new ClawbackManager(_config,
+                                                      _storeServicesClientFactory,
+                                                      _logger);
+                await clawManager.AddConsumeToClawbackQueueAsync(request, cV);
+            }
+
+            //  We have now taken action on the results of the consume and added the balance to the
+            //  user's account if it succeeded,  we can now remove this from the pending consume list
+            await RemovePendingConsumeAsync(request, cV);
+
+            return consumeResult;
+        }
+
 
         /// <summary>
         /// Converts a pendingRequest to a CollectionsConsumeRequest object.
