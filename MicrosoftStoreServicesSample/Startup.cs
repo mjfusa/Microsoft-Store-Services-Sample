@@ -101,10 +101,24 @@ namespace MicrosoftStoreServicesSample
             //-------------------------------------------------------------
             {
                 _logger.StartupInfo(_cV.Value, "Initializing CachedAccessTokenProvider with AAD Id's and secrets...");
+                
 
                 var tenantId = Configuration.GetValue(ServiceConstants.AADTenantIdKey, "");
+                if (string.IsNullOrEmpty(tenantId))
+                {
+                    tenantId= Environment.GetEnvironmentVariable(ServiceConstants.AADTenantIdKey);
+                }
+
                 var clientId = Configuration.GetValue(ServiceConstants.AADClientIdKey, "");
+                if (string.IsNullOrEmpty(clientId))
+                {
+                    tenantId = Environment.GetEnvironmentVariable(ServiceConstants.AADClientIdKey);
+                }
                 var clientSecret = Configuration.GetValue(ServiceConstants.AADClientSecretKey, "");
+                if (string.IsNullOrEmpty(clientSecret))
+                {
+                    tenantId = Environment.GetEnvironmentVariable(ServiceConstants.AADClientSecretKey);
+                }
 
                 if (string.IsNullOrEmpty(tenantId))
                 {
