@@ -112,12 +112,12 @@ namespace MicrosoftStoreServicesSample
                 var clientId = Configuration.GetValue(ServiceConstants.AADClientIdKey, "");
                 if (string.IsNullOrEmpty(clientId))
                 {
-                    tenantId = Environment.GetEnvironmentVariable(ServiceConstants.AADClientIdKey);
+                    clientId = Environment.GetEnvironmentVariable(ServiceConstants.AADClientIdKey);
                 }
                 var clientSecret = Configuration.GetValue(ServiceConstants.AADClientSecretKey, "");
                 if (string.IsNullOrEmpty(clientSecret))
                 {
-                    tenantId = Environment.GetEnvironmentVariable(ServiceConstants.AADClientSecretKey);
+                    clientSecret = Environment.GetEnvironmentVariable(ServiceConstants.AADClientSecretKey);
                 }
 
                 if (string.IsNullOrEmpty(tenantId))
